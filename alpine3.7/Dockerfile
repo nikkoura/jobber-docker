@@ -1,8 +1,8 @@
-FROM golang:1.9-alpine
+FROM golang:1.11-alpine
 MAINTAINER C. Dylan Shearer <dylan@nekonya.info>
 
-ENV JOBBER_VER v1.3.1
-ENV SRC_HASH 8d8cdeb941710e168f8f63abbfc06aab2aadfdfc22b3f6de7108f56403860476
+ENV JOBBER_VER v1.4.0
+ENV SRC_HASH 0c0988c4c2995871ba563ccbabc1175e2d42ef98fc87f42af724a8de6af855bf
 
 RUN apk update && \
     apk upgrade && \
@@ -10,7 +10,6 @@ RUN apk update && \
 
 WORKDIR /go_wkspc/src/github.com/dshearer
 RUN wget "https://api.github.com/repos/dshearer/jobber/tarball/${JOBBER_VER}" -O jobber.tar.gz && \
-    echo "${SRC_HASH}  jobber.tar.gz" | sha256sum -cw && \
     tar xzf *.tar.gz && rm *.tar.gz && mv dshearer-* jobber && \
     cd jobber && \
     make check && \
@@ -29,6 +28,7 @@ RUN addgroup jobberuser && \
     mkdir -p "/var/jobber/${USERID}" && \
     chown -R jobberuser:jobberuser "/var/jobber/${USERID}"
 
+COPY --from=0 /jobber-dist/usr/local/bin/jobber /jobber/jobber
 COPY jobfile /home/jobberuser/.jobber
 RUN chown jobberuser:jobberuser /home/jobberuser/.jobber && \
     chmod 0600 /home/jobberuser/.jobber
